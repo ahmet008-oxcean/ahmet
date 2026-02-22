@@ -31,4 +31,31 @@ Proje, düşük maliyetli fakat yüksek verimli bileşenlerle optimize edilmişt
 - **HMI Geliştirme:** Anlık değerler için 16x2 I2C LCD ekran desteği.
 - **Derin Tarım:** Toprak nem sensörü eklenerek otonom sulama entegrasyonu.
 
-🎓 Akıllı Sera Sistemi: Adım Adım Kurulum ve Teknik Mantık RehberiBu bölüm, sistemin donanım bileşenlerini nasıl birleştireceğinizi ve bu bağlantıların arkasındaki mühendislik nedenlerini açıklar.🔌 Donanım Bağlantı Tablosu (Pinout)BileşenArduino PiniBağlantı AmacıNeden Bu Pin?LM35 (Sinyal)A0Sıcaklık verisini okumak.Sıcaklık sürekli değişen (analog) bir veri olduğu için Analog-Digital dönüştürücü (ADC) pinine ihtiyaç duyar.Röle Modülü (IN)D7Fanı açıp kapatmak.Dijital bir anahtarlama sinyali (0 veya 1) göndererek fanın enerjisini yönetmek için.Yeşil LEDD8"Sistem Güvenli" uyarısı.Isı normal değerlerdeyken görsel onay sağlamak için.Kırmızı LEDD9"Kritik Isı" uyarısı.Isı 41°C'yi geçtiğinde acil durum görseli oluşturmak için.BuzzerD10Sesli Alarm.Tehlikeli durumda operatörü işitsel olarak uyarmak için.🧐 Hangi Bileşeni Neden Bağlıyoruz? (Detaylı Analiz)1. LM35 Sıcaklık Sensörü (A0 Pini)Bağlantı: Sensörün üç bacağı vardır; sol bacak 5V, sağ bacak GND, orta bacak ise A0'a gider.Neden: LM35, her 1 derecelik artış için 10 milivolt (mV) gerilim üretir. Arduino'nun A0 pini bu çok küçük voltaj değişimlerini algılayarak sayısal verilere dönüştürür. Diğer dijital pinler sadece "var" veya "yok" diyebilirken, A0 "ne kadar sıcak?" sorusuna cevap verebilir.2. 5V Röle Modülü (D7 Pini)Bağlantı: Rölenin VCC ve GND uçları Arduino'ya, IN ucu D7'ye bağlanır. Fanın artı ucu ise rölenin "Normalde Açık" (NO) terminalinden geçer.Neden: Arduino'nun pinleri sadece 5V ve çok düşük akım verir, bu da fanı döndürmeye yetmez. Röle burada bir "Akıllı Şalter" görevi görür. Arduino'dan gelen küçük sinyalle, harici 9V pilden gelen büyük gücü fan için serbest bırakır.3. Uyarı Sistemi (LED ve Buzzer - D8, D9, D10)Bağlantı: Her bir bileşen kendi dijital pinine bağlıdır. Devreye 220 ohm direnç eklenerek bileşenlerin aşırı akımdan yanması önlenir.Neden: Bir sistemin sadece çalışması yetmez; durumunu kullanıcıya bildirmesi gerekir.Yeşil LED: Sistemin aktif ve sıcaklığın 36°C'nin altında olduğunu gösterir.Kırmızı LED & Buzzer: Sıcaklık 41°C gibi kritik bir eşiği geçtiğinde devreye girer. Bu, ortamda bir yangın riski veya klima arızası olabileceğini bildiren bir **"Güvenlik Katmanı"**dır.⚠️ Önemli Kurulum Notları (Öğrenenler İçin)Ortak Şasi (Common Ground): Eğer fan için harici bir 9V pil kullanıyorsanız, pilin eksi (-) ucu ile Arduino'nun GND ucu mutlaka birbirine bağlanmalıdır. Aksi halde devre tamamlanmaz ve sinyaller havada kalır.Histerezis (Tolerans): Kodun içinde fanın 36°C'de açılıp tam 36°C'de kapanmaması gerekir. 35.5°C'ye kadar beklemesi, rölenin saniyede onlarca kez "çıt çıt" yaparak bozulmasını engeller.İzolasyon: Röle modülünün optokuplörlü (ışıkla yalıtımlı) olması, fan motorundan gelecek elektrik sıçramalarının Arduino'yu yakmasını veya resetlemesini önler.
+
+🔧 Teknik Kurulum ve Bağlantı Mantığı
+LM35 Sıcaklık Sensörü (A0 Pini):
+
+Bağlantı: Sol bacak 5V, sağ bacak GND ve orta bacak Arduino'nun A0 analog girişine bağlanır.
+
+Mantık: Sensör her 1°C artış için 10mV voltaj üretir. Analog pin (A0) kullanıyoruz çünkü dijital pinler sadece "var/yok" diyebilirken, analog pin bu voltajı 1024 farklı parçaya bölerek hassas ısı ölçümü yapmamızı sağlar.
+
+5V Röle Modülü (D7 Pini):
+
+Bağlantı: Sinyal girişi (IN) D7 pinine bağlanır. Fanın enerji hattı bu röle üzerinden geçer.
+
+Mantık: Arduino fanı doğrudan döndürecek güce sahip değildir. Röle burada bir "akıllı anahtar" görevi görür; Arduino'dan gelen düşük sinyalle harici pilin yüksek gücünü fana aktarır.
+
+Görsel ve İşitsel Uyarı Sistemi (D8, D9, D10):
+
+Yeşil LED (D8): Sistem aktif ve sıcaklık değerlerinin güvenli aralıkta (36°C altı) olduğunu belirtir.
+
+Kırmızı LED (D9): Sıcaklık kritik eşik olan 41°C değerini aştığında yanarak tehlikeyi bildirir.
+
+Buzzer (D10): Kritik ısı durumunda yüksek sesli uyarı vererek fiziksel müdahale gerekliliğini hatırlatır.
+
+💡 Mühendislik ve Güvenlik Detayları
+Ortak Şasi (Common Ground): Fan için kullanılan harici 9V pilin eksi kutbu ile Arduino'nun GND hattı birleştirilmiştir. Bu yapılmazsa devre tamamlanmaz ve sensör verileri hatalı okunur.
+
+Histerezis (Tolerans Payı): Fan tam 36°C'de açılır ancak 35.5°C'ye düşene kadar kapanmaz. Bu 0.5°C'lik fark, rölenin sınır değerlerde sürekli açılıp kapanarak bozulmasını (chattering) engeller.
+
+Optokuplör Koruması: Röle modülü üzerindeki izolasyon sayesinde, fan motoru çalışırken oluşan elektriksel gürültülerin Arduino'yu kilitlemesi veya resetlemesi önlenmiştir.
