@@ -1,5 +1,3 @@
-# ahmet
-lm35 projemin kodları yapım aşaması
 # Akıllı Sera İklimlendirme ve Erken Uyarı Sistemi (Tarım 4.0 Prototipi)
 
 Bu proje, Arduino platformu üzerinde geliştirilmiş; hassas sıcaklık takibi, otonom iklimlendirme kontrolü ve kritik durum alarm mekanizmalarını içeren bir **Mekatronik Sistem** çözümüdür.
