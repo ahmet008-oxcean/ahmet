@@ -1,1 +1,63 @@
+/*
+ * PROJE: Akıllı Sera İklimlendirme Sistemi v1.1
+ * GÜNCELLEME: Histerezis (Kararlılık Payı) eklendi.
+ */
 
+const int lm35Pin = A0;
+const int relayPin = 7;
+const int greenLed = 8;
+const int redLed = 9;
+const int buzzerPin = 10;
+
+// --- Parametreler ---
+const float setPoint = 36.0;    // Fanın açılacağı sıcaklık
+const float hysteresis = 0.5;   // Kapanma toleransı (35.5'te kapanır)
+const float alarmPoint = 41.0;  // Kritik alarm sınırı
+
+bool fanDurumu = false;         // Sistemin o anki durumunu tutar
+
+void setup() {
+  pinMode(relayPin, OUTPUT);
+  pinMode(greenLed, OUTPUT);
+  pinMode(redLed, OUTPUT);
+  pinMode(buzzerPin, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  // Sıcaklık okuma ve filtreleme (Ortalama alma eklenebilir)
+  int rawValue = analogRead(lm35Pin);
+  float temperature = (rawValue * 5.0 / 1024.0) * 100.0;
+
+  Serial.print("Sicaklik: ");
+  Serial.println(temperature);
+
+  // --- 1. KRİTİK ALARM MANTIĞI ---
+  if (temperature >= alarmPoint) {
+    digitalWrite(redLed, HIGH);
+    digitalWrite(greenLed, LOW);
+    // Buzzer Kesikli Uyarı (Delay kullanımı sadece alarm anında kabul edilebilir)
+    tone(buzzerPin, 1000); delay(100); noTone(buzzerPin); delay(100);
+  } else {
+    digitalWrite(redLed, LOW);
+    digitalWrite(greenLed, HIGH);
+    noTone(buzzerPin);
+  }
+
+  // --- 2. AKILLI FAN (HİSTEREZİS) MANTIĞI ---
+  if (temperature >= setPoint) {
+    fanDurumu = true; // Sıcaklık 36'yı geçti, fanı aç
+  } 
+  else if (temperature <= (setPoint - hysteresis)) {
+    fanDurumu = false; // Sıcaklık 35.5'in altına düştü, fanı kapat
+  }
+
+  // Fan durumuna göre röleyi tetikle
+  if (fanDurumu) {
+    digitalWrite(relayPin, HIGH);
+  } else {
+    digitalWrite(relayPin, LOW);
+  }
+
+  delay(500); // Yarım saniyede bir kontrol (Sistem tepki süresi için ideal)
+}
