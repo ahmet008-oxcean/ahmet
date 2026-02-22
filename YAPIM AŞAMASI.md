@@ -32,7 +32,7 @@ Proje, düşük maliyetli fakat yüksek verimli bileşenlerle optimize edilmişt
 - **Derin Tarım:** Toprak nem sensörü eklenerek otonom sulama entegrasyonu.
 
 
-#🔧 Teknik Kurulum ve Bağlantı Mantığı
+# 🔧 Teknik Kurulum ve Bağlantı Mantığı
 LM35 Sıcaklık Sensörü (A0 Pini):
 
 Bağlantı: Sol bacak 5V, sağ bacak GND ve orta bacak Arduino'nun A0 analog girişine bağlanır.
